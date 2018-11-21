@@ -56,7 +56,9 @@ func handlerJSONget(w http.ResponseWriter, r *http.Request) {
 	if err := g.Get(emp); err != nil { // 取得できなかった場合
 		// ログ・エラーメッセージを表示する
 		log.Errorf(c, "could not get the record: %v", err)
-		http.Error(w, "An error occurred.", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	// 取得したデータをJSONに変換する
@@ -64,7 +66,9 @@ func handlerJSONget(w http.ResponseWriter, r *http.Request) {
 	if err != nil { // 変換できなかった場合
 		// ログ・エラーメッセージを出力する
 		log.Errorf(c, "could not convert to JSON: %v", err)
-		http.Error(w, "An error occurred.", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	// 取得データを画面に出力する
@@ -82,6 +86,9 @@ func handlerJSONpost(w http.ResponseWriter, r *http.Request) {
 	if err != nil { // 取得できなかった場合
 		// ログを出力する
 		log.Errorf(c, "err %v", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	// Employee型の変数を生成する
@@ -171,7 +178,9 @@ func handlerGoonGet(w http.ResponseWriter, r *http.Request) {
 	if err := g.Get(employee); err != nil { // 取得できなかった場合
 		// ログ・エラーメッセージを出力する
 		log.Errorf(c, "could not get the record: %v", err)
-		http.Error(w, "An error occurred.", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 
 	// 取得したEmployeeを出力する
@@ -249,6 +258,8 @@ func handlerGet(w http.ResponseWriter, r *http.Request) {
 
 	// データを取得できなかった場合、メッセージを出力する
 	if err != nil {
-		fmt.Fprintln(w, "no!")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
 }
