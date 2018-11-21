@@ -1,0 +1,9 @@
+# app.yaml
+application: sandbox-kimhansol
+runtime: go
+api_version: go1
+version: datastore-test
+
+handlers:
+- url: /.* 
+  script: _go_app
