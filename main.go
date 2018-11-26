@@ -97,8 +97,10 @@ func handlerJSONpost(w http.ResponseWriter, r *http.Request) {
 	// リクエストBodyのデータをEmployee型に変換する
 	if err := json.Unmarshal(jsonBytes, &emp); err != nil { // 変換できなかった場合
 		// ログ・エラーメッセージを出力する
-		fmt.Fprintln(w, "1st error")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Errorf(c, "1st error: %v", err)
+
+		return
 	}
 
 	// 情報ログを出力する
