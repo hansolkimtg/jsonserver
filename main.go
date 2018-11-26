@@ -25,6 +25,7 @@ type Employee struct {
 }
 
 func main() {
+	http.HandleFunc("/query", handlerQuery)
 	http.HandleFunc("/jsonpost", handlerJSONpost)
 	http.HandleFunc("/jsonget", handlerJSONget)
 	http.HandleFunc("/get", handlerGet)
@@ -36,6 +37,43 @@ func main() {
 	http.HandleFunc("/goon-put", handlerGoonPut)
 	http.HandleFunc("/goon-delete", handlerGoonDelete)
 	appengine.Main()
+}
+
+// Queryを実行する
+func handlerQuery(w http.ResponseWriter, r *http.Request) {
+	// リクエストからappengineのコンテキストを生成する
+	c := appengine.NewContext(r)
+
+	// URLから名前を取得する
+	name := r.URL.Query().Get("name")
+
+	// クエリを作成する：Kind-「Employee」、Name-「取得値」、max「3」
+	q := datastore.NewQuery("Employee").Filter("Name=", name).Limit(3)
+	// クエリを実行する
+	iter := q.Run(c)
+
+	// 結果データをループさせる
+	for {
+		var emp Employee
+		// 結果をempに保存する
+		_, err := iter.Next(&emp)
+		// 取得結果が終わったらループを終了する
+		if err == datastore.Done {
+			break
+		}
+
+		// 取得中にエラーが発生した場合
+		if err != nil {
+			// ログ・エラーメッセージを出力する
+			log.Errorf(c, "fetching next Employee: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+
+		// エラーが発生してなければ、結果を出力する
+		fmt.Fprintf(w, "%+v\n", emp)
+	}
 }
 
 // jSONでget処理を行う
