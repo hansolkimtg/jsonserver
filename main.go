@@ -26,7 +26,7 @@ type Employee struct {
 
 func main() {
 	http.HandleFunc("/query", handlerQuery)
-	// http.HandleFunc("/goon-query", handleGoonQuery)
+	http.HandleFunc("/goon-query", handlerGoonQuery)
 	http.HandleFunc("/jsonpost", handlerJSONpost)
 	http.HandleFunc("/jsonget", handlerJSONget)
 	http.HandleFunc("/get", handlerGet)
@@ -38,6 +38,17 @@ func main() {
 	http.HandleFunc("/goon-put", handlerGoonPut)
 	http.HandleFunc("/goon-delete", handlerGoonDelete)
 	appengine.Main()
+}
+
+// Goonを使用してQueryを実行する
+func handlerGoonQuery(w http.ResponseWriter, r *http.Request) {
+	// リクエストからappengineのコンテキストを生成する
+	// c := appengine.NewContext(r)
+
+	// URLから名前を得する
+	// name := r.URL.Query().Get("name")
+
+	// クエリを作成する：Kind-「Employee」、Name-「取得値」、max「3」
 }
 
 // Queryを実行する
@@ -76,9 +87,9 @@ func handlerQuery(w http.ResponseWriter, r *http.Request) {
 
 		// エラーが発生してなければ、結果を格納する
 		resultSet = append(resultSet, emp)
-		json.Marshal(emp)
 	}
 
+	// 取得結果をJSONに変換する
 	jsonFormat, err := json.Marshal(resultSet)
 	if err != nil {
 		// ログ・エラーメッセージを出力する
@@ -88,8 +99,9 @@ func handlerQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, fmt.Sprintf("emp: %s\n", jsonFormat))
-
+	// 結果を出力する
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonFormat)
 }
 
 // jSONでget処理を行う
