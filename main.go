@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"google.golang.org/appengine/log"
@@ -56,11 +57,21 @@ func handlerQuery(w http.ResponseWriter, r *http.Request) {
 	// リクエストからappengineのコンテキストを生成する
 	c := appengine.NewContext(r)
 
-	// URLから名前を取得する
+	// URLから名前、リミットを取得する
 	name := r.URL.Query().Get("name")
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 
-	// クエリを作成する：Kind-「Employee」、Name-「取得値」、max「3」
-	q := datastore.NewQuery("Employee").Filter("Name=", name).Limit(3)
+	// 取得中にエラーが発生した場合
+	if err != nil {
+		// ログ・エラーメッセージを出力する
+		log.Errorf(c, "'limit'を取得できませんでした: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	// クエリを作成する：Kind-「Employee」、Name-「取得値」、max「取得値」
+	q := datastore.NewQuery("Employee").Filter("Name=", name).Limit(limit)
 	// クエリを実行する
 	iter := q.Run(c)
 
