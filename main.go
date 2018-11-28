@@ -52,6 +52,8 @@ func handlerQuery(w http.ResponseWriter, r *http.Request) {
 	// クエリを実行する
 	iter := q.Run(c)
 
+	// 結果リストを準備する
+	var resultSet []Employee
 	// 結果データをループさせる
 	for {
 		var emp Employee
@@ -71,8 +73,13 @@ func handlerQuery(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// エラーが発生してなければ、結果を出力する
-		fmt.Fprintf(w, "%+v\n", emp)
+		// エラーが発生してなければ、結果を格納する
+		resultSet = append(resultSet, emp)
+	}
+
+	// 結果を出力する
+	for _, resultValue := range resultSet {
+		fmt.Fprintf(w, "%+v\n", resultValue)
 	}
 }
 
