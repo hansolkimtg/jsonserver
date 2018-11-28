@@ -26,6 +26,7 @@ type Employee struct {
 
 func main() {
 	http.HandleFunc("/query", handlerQuery)
+	// http.HandleFunc("/goon-query", handleGoonQuery)
 	http.HandleFunc("/jsonpost", handlerJSONpost)
 	http.HandleFunc("/jsonget", handlerJSONget)
 	http.HandleFunc("/get", handlerGet)
@@ -75,12 +76,20 @@ func handlerQuery(w http.ResponseWriter, r *http.Request) {
 
 		// エラーが発生してなければ、結果を格納する
 		resultSet = append(resultSet, emp)
+		json.Marshal(emp)
 	}
 
-	// 結果を出力する
-	for _, resultValue := range resultSet {
-		fmt.Fprintf(w, "%+v\n", resultValue)
+	jsonFormat, err := json.Marshal(resultSet)
+	if err != nil {
+		// ログ・エラーメッセージを出力する
+		log.Errorf(c, "Error converting to JSON: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
 	}
+
+	fmt.Fprintln(w, fmt.Sprintf("emp: %s\n", jsonFormat))
+
 }
 
 // jSONでget処理を行う
