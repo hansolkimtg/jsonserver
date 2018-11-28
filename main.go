@@ -27,7 +27,6 @@ type Employee struct {
 
 func main() {
 	http.HandleFunc("/query", handlerQuery)
-	http.HandleFunc("/goon-query", handlerGoonQuery)
 	http.HandleFunc("/jsonpost", handlerJSONpost)
 	http.HandleFunc("/jsonget", handlerJSONget)
 	http.HandleFunc("/get", handlerGet)
@@ -39,17 +38,6 @@ func main() {
 	http.HandleFunc("/goon-put", handlerGoonPut)
 	http.HandleFunc("/goon-delete", handlerGoonDelete)
 	appengine.Main()
-}
-
-// Goonを使用してQueryを実行する
-func handlerGoonQuery(w http.ResponseWriter, r *http.Request) {
-	// リクエストからappengineのコンテキストを生成する
-	// c := appengine.NewContext(r)
-
-	// URLから名前を得する
-	// name := r.URL.Query().Get("name")
-
-	// クエリを作成する：Kind-「Employee」、Name-「取得値」、max「3」
 }
 
 // Queryを実行する
