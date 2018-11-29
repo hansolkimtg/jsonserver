@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"google.golang.org/appengine/log"
@@ -25,6 +26,7 @@ type Employee struct {
 }
 
 func main() {
+	http.HandleFunc("/query", handlerQuery)
 	http.HandleFunc("/jsonpost", handlerJSONpost)
 	http.HandleFunc("/jsonget", handlerJSONget)
 	http.HandleFunc("/get", handlerGet)
@@ -36,6 +38,69 @@ func main() {
 	http.HandleFunc("/goon-put", handlerGoonPut)
 	http.HandleFunc("/goon-delete", handlerGoonDelete)
 	appengine.Main()
+}
+
+// Queryを実行する
+func handlerQuery(w http.ResponseWriter, r *http.Request) {
+	// リクエストからappengineのコンテキストを生成する
+	c := appengine.NewContext(r)
+
+	// URLから名前、リミットを取得する
+	name := r.URL.Query().Get("name")
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+
+	// 取得中にエラーが発生した場合
+	if err != nil {
+		// ログ・エラーメッセージを出力する
+		log.Errorf(c, "'limit'を取得できませんでした: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	// クエリを作成する：Kind-「Employee」、Name-「取得値」、max「取得値」
+	q := datastore.NewQuery("Employee").Filter("Name=", name).Limit(limit)
+	// クエリを実行する
+	iter := q.Run(c)
+
+	// 結果リストを準備する
+	var resultSet []Employee
+	// 結果データをループさせる
+	for {
+		var emp Employee
+		// 結果をempに保存する
+		_, err := iter.Next(&emp)
+		// 取得結果が終わったらループを終了する
+		if err == datastore.Done {
+			break
+		}
+
+		// 取得中にエラーが発生した場合
+		if err != nil {
+			// ログ・エラーメッセージを出力する
+			log.Errorf(c, "fetching next Employee: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+			return
+		}
+
+		// エラーが発生してなければ、結果を格納する
+		resultSet = append(resultSet, emp)
+	}
+
+	// 取得結果をJSONに変換する
+	jsonFormat, err := json.Marshal(resultSet)
+	if err != nil {
+		// ログ・エラーメッセージを出力する
+		log.Errorf(c, "Error converting to JSON: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return
+	}
+
+	// 結果を出力する
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonFormat)
 }
 
 // jSONでget処理を行う
